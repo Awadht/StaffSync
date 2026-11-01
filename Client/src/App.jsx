@@ -3,6 +3,14 @@ import axios from "axios";
 function App() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showRegistration, setShowRegistration] = useState(false);
+  const [registration, setRegistration] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    role: "Employee",
+  });
   const [user, setUser] = useState(
     JSON.parse(localStorage.getItem("user")) || null
   );
@@ -69,6 +77,42 @@ const [newEmployee, setNewEmployee] = useState({
     } catch (error) {
       setMessage(
         error.response?.data?.message || "Login failed"
+      );
+    }
+  };
+  const handleRegister = async (e) => {
+    e.preventDefault();
+
+    if (registration.password !== registration.confirmPassword) {
+      setMessage("Passwords do not match");
+      return;
+    }
+
+    try {
+      await axios.post(
+        "http://localhost:5000/api/auth/register",
+        {
+          name: registration.name,
+          email: registration.email,
+          password: registration.password,
+          role: registration.role,
+        }
+      );
+
+      setEmail(registration.email);
+      setPassword("");
+      setRegistration({
+        name: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+        role: "Employee",
+      });
+      setShowRegistration(false);
+      setMessage("Registration successful. Please login.");
+    } catch (error) {
+      setMessage(
+        error.response?.data?.message || "Registration failed"
       );
     }
   };
@@ -629,6 +673,95 @@ const handleEditEmployee = async (e) => {
             Employee Management System
           </p>
 
+          {showRegistration ? (
+            <form onSubmit={handleRegister}>
+              <input
+                type="text"
+                placeholder="Full Name"
+                value={registration.name}
+                onChange={(e) =>
+                  setRegistration({ ...registration, name: e.target.value })
+                }
+                required
+              />
+              <input
+                type="email"
+                placeholder="Email"
+                value={registration.email}
+                onChange={(e) =>
+                  setRegistration({ ...registration, email: e.target.value })
+                }
+                required
+              />
+              <input
+                type="password"
+                placeholder="Password"
+                value={registration.password}
+                onChange={(e) =>
+                  setRegistration({ ...registration, password: e.target.value })
+                }
+                required
+              />
+              <input
+                type="password"
+                placeholder="Confirm Password"
+                value={registration.confirmPassword}
+                onChange={(e) =>
+                  setRegistration({
+                    ...registration,
+                    confirmPassword: e.target.value,
+                  })
+                }
+                required
+              />
+              <select
+                value={registration.role}
+                onChange={(e) =>
+                  setRegistration({ ...registration, role: e.target.value })
+                }
+                required
+              >
+                <option value="Employee">Employee</option>
+                <option value="Manager">Manager</option>
+                <option value="HR">HR</option>
+              </select>
+              <button
+                type="submit"
+                style={{
+                  width: "100%",
+                  padding: "12px",
+                  backgroundColor: "#2563eb",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  fontSize: "15px",
+                  fontWeight: "600",
+                }}
+              >
+                Register
+              </button>
+              <p style={{ textAlign: "center", marginBottom: 0 }}>
+                Already have an account?{" "}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowRegistration(false);
+                    setMessage("");
+                  }}
+                  style={{
+                    padding: 0,
+                    color: "#2563eb",
+                    background: "none",
+                    border: "none",
+                    fontWeight: "600",
+                  }}
+                >
+                  Login
+                </button>
+              </p>
+            </form>
+          ) : (
           <form onSubmit={handleLogin}>
             <input
               type="email"
@@ -685,6 +818,7 @@ const handleEditEmployee = async (e) => {
               Login
             </button>
           </form>
+          )}
 
           {message && (
             <p
@@ -696,6 +830,27 @@ const handleEditEmployee = async (e) => {
               }}
             >
               {message}
+            </p>
+          )}
+          {!showRegistration && (
+            <p style={{ textAlign: "center", marginBottom: 0 }}>
+              Don&apos;t have an account?{" "}
+              <button
+                type="button"
+                onClick={() => {
+                  setShowRegistration(true);
+                  setMessage("");
+                }}
+                style={{
+                  padding: 0,
+                  color: "#2563eb",
+                  background: "none",
+                  border: "none",
+                  fontWeight: "600",
+                }}
+              >
+                Register
+              </button>
             </p>
           )}
         </div>

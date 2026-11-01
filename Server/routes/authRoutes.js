@@ -22,6 +22,12 @@ router.post("/register", async (req, res) => {
       });
     }
 
+    if (!["Employee", "Manager", "HR"].includes(role)) {
+      return res.status(400).json({
+        message: "Invalid role",
+      });
+    }
+
     // Check whether user already exists
     const existingUser = await User.findOne({ email });
 
